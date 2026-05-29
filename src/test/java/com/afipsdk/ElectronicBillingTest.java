@@ -6,6 +6,7 @@ import com.afipsdk.service.ElectronicBilling;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +119,46 @@ class ElectronicBillingTest {
         assertEquals(2, points.size());
     }
 
+    @Test
+    void createVoucher_withIva_wrapsAliquotaAndReturnsCAE() {
+        stub.addResponse(TA_RESPONSE);
+        stub.addResponse("{\"FECAESolicitarResult\":{"
+                + "\"FeCabResp\":{\"CantReg\":1,\"PtoVta\":1,\"CbteTipo\":6,\"Resultado\":\"A\"},"
+                + "\"FeDetResp\":{\"FECAEDetResponse\":{"
+                + "\"CAE\":\"12345678901234\",\"CAEFchVto\":\"20241231\","
+                + "\"Resultado\":\"A\",\"CbteDesde\":43,\"CbteHasta\":43"
+                + "}}}}");
+
+        Map<String, Object> result = billing.createVoucher(sandboxVoucherData(43));
+
+        assertEquals("12345678901234", result.get("CAE"));
+        assertEquals("2024-12-31", result.get("CAEFchVto"));
+    }
+
+    @Test
+    void createVoucher_fullFlow_getLastThenCreate() {
+        // getLastVoucher devuelve 42 → el siguiente es 43
+        stub.addResponse(TA_RESPONSE);
+        stub.addResponse("{\"FECompUltimoAutorizadoResult\":{\"PtoVta\":1,\"CbteNro\":42,\"CbteTipo\":6}}");
+        // createVoucher con número 43
+        stub.addResponse(TA_RESPONSE);
+        stub.addResponse("{\"FECAESolicitarResult\":{"
+                + "\"FeDetResp\":{\"FECAEDetResponse\":{"
+                + "\"CAE\":\"12345678901234\",\"CAEFchVto\":\"20241231\","
+                + "\"Resultado\":\"A\",\"CbteDesde\":43,\"CbteHasta\":43"
+                + "}}}}");
+
+        int lastVoucher     = billing.getLastVoucher(1, 6);
+        int numeroDeFactura = lastVoucher + 1;
+
+        assertEquals(43, numeroDeFactura);
+
+        Map<String, Object> result = billing.createVoucher(sandboxVoucherData(numeroDeFactura));
+
+        assertEquals("12345678901234", result.get("CAE"));
+        assertEquals("2024-12-31", result.get("CAEFchVto"));
+    }
+
     // -------------------------------------------------------------------------
 
     private static Map<String, Object> minimalVoucherData() {
@@ -138,6 +179,36 @@ class ElectronicBillingTest {
         data.put("ImpTrib", 0);
         data.put("MonId", "PES");
         data.put("MonCotiz", 1);
+        return data;
+    }
+
+    /** Replica el data del ejemplo Sandbox.java: Factura B con IVA 21% y consumidor final. */
+    private static Map<String, Object> sandboxVoucherData(int numeroDeFactura) {
+        Map<String, Object> alicuota = new HashMap<String, Object>();
+        alicuota.put("Id",      5);     // 5 = 21%
+        alicuota.put("BaseImp", 100.0);
+        alicuota.put("Importe", 21.0);
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("CantReg",   1);
+        data.put("PtoVta",    1);
+        data.put("CbteTipo",  6);       // 6 = Factura B
+        data.put("Concepto",  1);       // 1 = Productos
+        data.put("DocTipo",   99);      // 99 = Consumidor Final
+        data.put("DocNro",    0);
+        data.put("CbteDesde", numeroDeFactura);
+        data.put("CbteHasta", numeroDeFactura);
+        data.put("CbteFch",   20241201);
+        data.put("ImpTotal",  121.0);
+        data.put("ImpTotConc", 0);
+        data.put("ImpNeto",   100.0);
+        data.put("ImpOpEx",   0.0);
+        data.put("ImpIVA",    21.0);
+        data.put("ImpTrib",   0);
+        data.put("MonId",     "PES");
+        data.put("MonCotiz",  1);
+        data.put("CondicionIVAReceptorId", 5);  // 5 = Consumidor Final
+        data.put("Iva", Arrays.asList(alicuota));
         return data;
     }
 }

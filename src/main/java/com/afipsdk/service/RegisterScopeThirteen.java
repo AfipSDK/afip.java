@@ -46,7 +46,7 @@ public final class RegisterScopeThirteen extends AfipWebService {
             Map<String, Object> result = executeAfip("getPersona", extra);
             return extractPersona(result);
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("No existe")) {
+            if (e.getMessage() != null && (e.getMessage().contains("No existe") || e.getMessage().contains("es inexistente"))) {
                 return null;
             }
             throw e;
@@ -65,11 +65,15 @@ public final class RegisterScopeThirteen extends AfipWebService {
             Map<String, Object> result = executeAfip("getIdPersonaListByDocumento", extra);
             return result.get("idPersona");
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("No existe")) {
-                return null;
-            }
+            if (isNotFoundError(e)) return null;
             throw e;
         }
+    }
+
+    private static boolean isNotFoundError(Exception e) {
+        String msg = e.getMessage();
+        if (msg == null) return false;
+        return msg.contains("No existe") || msg.contains("es inexistente");
     }
 
     // -------------------------------------------------------------------------

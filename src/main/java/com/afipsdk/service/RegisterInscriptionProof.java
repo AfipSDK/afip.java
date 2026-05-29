@@ -45,9 +45,7 @@ public final class RegisterInscriptionProof extends AfipWebService {
 
             return executeAfip("getPersona_v2", extra);
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("No existe")) {
-                return null;
-            }
+            if (isNotFoundError(e)) return null;
             throw e;
         }
     }
@@ -64,11 +62,15 @@ public final class RegisterInscriptionProof extends AfipWebService {
             Map<String, Object> result = executeAfip("getPersonaList_v2", extra);
             return extractList(result, "persona");
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("No existe")) {
-                return null;
-            }
+            if (isNotFoundError(e)) return null;
             throw e;
         }
+    }
+
+    private static boolean isNotFoundError(Exception e) {
+        String msg = e.getMessage();
+        if (msg == null) return false;
+        return msg.contains("No existe") || msg.contains("es inexistente");
     }
 
     // -------------------------------------------------------------------------

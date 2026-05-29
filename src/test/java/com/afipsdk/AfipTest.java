@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AfipTest {
+    // Ejecutar los tests unitarios mvn test "-Dtest=!**/integration/*"
 
     private StubHttpClient stub;
     private Afip afip;
