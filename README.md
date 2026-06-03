@@ -27,14 +27,14 @@ Con más de 100k descargas en otros lenguajes, desde el 2017, Afip SDK es la pla
 <dependency>
     <groupId>com.afipsdk</groupId>
     <artifactId>afip-sdk-java</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 **Gradle**
 
 ```gradle
-implementation 'com.afipsdk:afip-sdk-java:0.1.0'
+implementation 'com.afipsdk:afip-sdk-java:1.0.0'
 ```
 
 ## Uso
