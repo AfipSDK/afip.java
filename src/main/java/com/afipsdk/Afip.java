@@ -8,6 +8,7 @@ import com.afipsdk.model.GetLastRequestXmlResponse;
 import com.afipsdk.model.GetServiceTAResponse;
 import com.afipsdk.model.WebServiceConfig;
 import com.afipsdk.service.ElectronicBilling;
+import com.afipsdk.service.FacturaSDK;
 import com.afipsdk.service.RegisterInscriptionProof;
 import com.afipsdk.service.RegisterScopeThirteen;
 import com.google.gson.Gson;
@@ -37,6 +38,7 @@ public final class Afip {
     private final ElectronicBilling electronicBilling;
     private final RegisterScopeThirteen registerScopeThirteen;
     private final RegisterInscriptionProof registerInscriptionProof;
+    private final FacturaSDK facturaSDK;
 
     public Afip(AfipOptions options) {
         this.options = options != null ? options : new AfipOptions();
@@ -45,6 +47,7 @@ public final class Afip {
         this.electronicBilling = new ElectronicBilling(this);
         this.registerScopeThirteen = new RegisterScopeThirteen(this);
         this.registerInscriptionProof = new RegisterInscriptionProof(this);
+        this.facturaSDK = new FacturaSDK(this, facturaSdkHttpClient(this.options));
     }
     // package-private: para tests
     Afip(AfipOptions options, HttpClient httpClient) {
@@ -53,6 +56,29 @@ public final class Afip {
         this.electronicBilling = new ElectronicBilling(this);
         this.registerScopeThirteen = new RegisterScopeThirteen(this);
         this.registerInscriptionProof = new RegisterInscriptionProof(this);
+        this.facturaSDK = new FacturaSDK(this, httpClient);
+    }
+
+    /**
+     * Cliente HTTP de Factura SDK: el access token de Factura SDK (o el de Afip SDK si no hay
+     * uno propio) y el ambiente que ese token decide.
+     */
+    private static HttpClient facturaSdkHttpClient(AfipOptions options) {
+        String token = options.getFacturaSdkAccessToken();
+        if (token == null || token.isEmpty()) {
+            token = options.getAccessToken();
+        }
+
+        String environment;
+        if (token != null && token.startsWith("fsk_prod_")) {
+            environment = "prod";
+        } else if (token != null && token.startsWith("fsk_dev_")) {
+            environment = "dev";
+        } else {
+            environment = options.isProduction() ? "prod" : "dev";
+        }
+
+        return new HttpClient(options, token, environment);
     }
 
 
@@ -71,6 +97,12 @@ public final class Afip {
 
     /** Servicio de constancia de inscripción. */
     public RegisterInscriptionProof registerInscriptionProof() { return registerInscriptionProof; }
+
+    /**
+     * Factura SDK: emisión de comprobantes de punta a punta (emisores, certificados,
+     * comprobantes y webhooks). Usa el access token de Factura SDK.
+     */
+    public FacturaSDK facturaSDK() { return facturaSDK; }
 
     /**
      * Crea un web service genérico para un servicio AFIP no implementado nativamente.

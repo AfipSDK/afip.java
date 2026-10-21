@@ -27,9 +27,25 @@ public class HttpClient {
     private static final Gson GSON = new Gson();
 
     private final AfipOptions options;
+    private final String accessToken;
+    private final String environment;
 
     public HttpClient(AfipOptions options) {
+        this(options, options != null ? options.getAccessToken() : null,
+                options != null && options.isProduction() ? "prod" : "dev");
+    }
+
+    /**
+     * Cliente con un token y un ambiente distintos de los de las opciones.
+     * Lo usa Factura SDK, cuyo access token decide el ambiente.
+     *
+     * @param accessToken token enviado como Bearer, o {@code null} para no enviar ninguno
+     * @param environment ambiente informado al backend ("dev" o "prod")
+     */
+    public HttpClient(AfipOptions options, String accessToken, String environment) {
         this.options = options;
+        this.accessToken = accessToken;
+        this.environment = environment;
     }
 
     /**
@@ -56,7 +72,24 @@ public class HttpClient {
         return response.getData();
     }
 
+    /**
+     * Ejecuta una request con cualquier método y headers adicionales, y devuelve la respuesta
+     * tal cual, sin lanzar excepción por el status HTTP (sí por errores de comunicación).
+     *
+     * @param method  "GET", "POST", "PUT" o "DELETE"
+     * @param path    path relativo a la URL base, con query string si hace falta
+     * @param body    cuerpo JSON, o {@code null}
+     * @param headers headers adicionales, o {@code null}
+     */
+    public AfipHttpResponse request(String method, String path, Map<String, Object> body, Map<String, String> headers) {
+        return execute(method, path, body, headers);
+    }
+
     private AfipHttpResponse execute(String method, String path, Map<String, Object> body) {
+        return execute(method, path, body, null);
+    }
+
+    private AfipHttpResponse execute(String method, String path, Map<String, Object> body, Map<String, String> headers) {
         HttpURLConnection conn = null;
         try {
             URL url = new URL(API_BASE_URL + path);
@@ -70,11 +103,16 @@ public class HttpClient {
             conn.setRequestProperty("User-Agent", "afip-sdk-java/" + SDK_VERSION);
             conn.setRequestProperty("sdk-version-number", SDK_VERSION);
             conn.setRequestProperty("sdk-library", "java");
-            conn.setRequestProperty("sdk-environment", options.isProduction() ? "prod" : "dev");
+            conn.setRequestProperty("sdk-environment", environment);
 
-            String token = options.getAccessToken();
-            if (token != null && !token.isEmpty()) {
-                conn.setRequestProperty("Authorization", "Bearer " + token);
+            if (accessToken != null && !accessToken.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            }
+
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    conn.setRequestProperty(header.getKey(), header.getValue());
+                }
             }
 
             if (body != null) {
