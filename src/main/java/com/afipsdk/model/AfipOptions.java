@@ -10,7 +10,6 @@ public final class AfipOptions {
     private String cert;
     private String key;
     private String accessToken;
-    private String facturaSdkAccessToken;
 
     public AfipOptions() {}
 
@@ -34,10 +33,4 @@ public final class AfipOptions {
     public String getAccessToken() { return accessToken; }
     public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
 
-    /**
-     * Access token de un proyecto Factura SDK (fsk_dev_… o fsk_prod_…), cuando el access token
-     * no es uno. El token decide el ambiente de {@code afip.facturaSDK()}.
-     */
-    public String getFacturaSdkAccessToken() { return facturaSdkAccessToken; }
-    public void setFacturaSdkAccessToken(String facturaSdkAccessToken) { this.facturaSdkAccessToken = facturaSdkAccessToken; }
 }

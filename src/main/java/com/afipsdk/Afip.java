@@ -60,14 +60,10 @@ public final class Afip {
     }
 
     /**
-     * Cliente HTTP de Factura SDK: el access token de Factura SDK (o el de Afip SDK si no hay
-     * uno propio) y el ambiente que ese token decide.
+     * Cliente HTTP de Factura SDK: el access token de Afip SDK y el ambiente que ese token decide.
      */
     private static HttpClient facturaSdkHttpClient(AfipOptions options) {
-        String token = options.getFacturaSdkAccessToken();
-        if (token == null || token.isEmpty()) {
-            token = options.getAccessToken();
-        }
+        String token = options.getAccessToken();
 
         String environment;
         if (token != null && token.startsWith("fsk_prod_")) {

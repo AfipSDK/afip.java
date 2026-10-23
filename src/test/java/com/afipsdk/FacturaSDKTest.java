@@ -263,17 +263,15 @@ class FacturaSDKTest {
     }
 
     @Test
-    void afip_withFacturaSdkAccessToken_buildsService() {
+    void afip_withFacturaSdkToken_buildsService() {
         AfipOptions options = new AfipOptions();
         options.setCuit("20111111112");
-        options.setAccessToken("afipsdk-token");
-        options.setFacturaSdkAccessToken("fsk_prod_abc");
+        options.setAccessToken("fsk_prod_abc");
 
         Afip afip = new Afip(options);
 
         assertNotNull(afip.facturaSDK());
-        assertEquals("fsk_prod_abc", afip.getOptions().getFacturaSdkAccessToken());
-        assertEquals("afipsdk-token", afip.getOptions().getAccessToken());
+        assertEquals("fsk_prod_abc", afip.getOptions().getAccessToken());
     }
 
     // -------------------------------------------------------------------------

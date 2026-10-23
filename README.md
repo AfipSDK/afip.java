@@ -118,7 +118,7 @@ Map<String, Object> invoice = afip.facturaSDK().createInvoice(data, "venta-0001"
 Map<String, Object> event = afip.facturaSDK().constructWebhookEvent(rawBody, signatureHeader, secret);
 ```
 
-Emisores, certificados, comprobantes, webhooks y automatizaciones están en `afip.facturaSDK()`. Los errores de la API llegan como `FacturaSDKException`, con `getStatus()`, `getDataErrors()` y `getErrors()`. Si además usás los web services de Afip SDK, pasá el token de Factura SDK con `options.setFacturaSdkAccessToken(...)`.
+Emisores, certificados, comprobantes, webhooks y automatizaciones están en `afip.facturaSDK()`. Los errores de la API llegan como `FacturaSDKException`, con `getStatus()`, `getDataErrors()` y `getErrors()`.
 
 ## Documentación
 
