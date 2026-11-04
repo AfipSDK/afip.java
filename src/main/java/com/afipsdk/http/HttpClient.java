@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class HttpClient {
 
-    private static final String SDK_VERSION = "1.0.0";
+    private static final String SDK_VERSION = "1.1.0";
     private static final String API_BASE_URL = "https://app.afipsdk.com/api/";
     private static final int TIMEOUT_MS = 30_000;
 

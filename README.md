@@ -27,14 +27,14 @@ Con más de 100k descargas en otros lenguajes, desde el 2017, Afip SDK es la pla
 <dependency>
     <groupId>com.afipsdk</groupId>
     <artifactId>afip-sdk-java</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 **Gradle**
 
 ```gradle
-implementation 'com.afipsdk:afip-sdk-java:1.0.0'
+implementation 'com.afipsdk:afip-sdk-java:1.1.0'
 ```
 
 ## Uso
@@ -101,24 +101,9 @@ System.out.println("CAE:         " + response.get("CAE"));
 System.out.println("Vencimiento: " + response.get("CAEFchVto"));
 ```
 
-### Factura SDK
+## Factura SDK
 
-La librería también incluye [Factura SDK](https://afipsdk.com/docs/facturasdk/), para emitir comprobantes de punta a punta (certificado, punto de venta, autorización en ARCA, PDF y webhooks) con el access token de un proyecto Factura SDK:
-
-```java
-AfipOptions options = new AfipOptions();
-options.setAccessToken("fsk_dev_…");
-
-Afip afip = new Afip(options);
-
-// Responde enseguida con el comprobante en cola; el resultado llega a tu webhook
-Map<String, Object> invoice = afip.facturaSDK().createInvoice(data, "venta-0001");
-
-// En tu endpoint de webhook: verifica la firma y devuelve el evento
-Map<String, Object> event = afip.facturaSDK().constructWebhookEvent(rawBody, signatureHeader, secret);
-```
-
-Emisores, certificados, comprobantes, webhooks y automatizaciones están en `afip.facturaSDK()`. Los errores de la API llegan como `FacturaSDKException`, con `getStatus()`, `getDataErrors()` y `getErrors()`.
+La librería también incluye [Factura SDK](https://afipsdk.com/docs/facturasdk/), para emitir comprobantes de punta a punta (certificado, punto de venta, autorización en ARCA, PDF y webhooks).
 
 ## Documentación
 
