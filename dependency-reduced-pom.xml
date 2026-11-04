@@ -4,7 +4,7 @@
   <groupId>com.afipsdk</groupId>
   <artifactId>afip-sdk-java</artifactId>
   <name>AFIP SDK Java</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>Cliente Java oficial para la API de AfipSDK</description>
   <url>https://afipsdk.com</url>
   <developers>

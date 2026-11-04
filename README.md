@@ -27,14 +27,14 @@ Con más de 100k descargas en otros lenguajes, desde el 2017, Afip SDK es la pla
 <dependency>
     <groupId>com.afipsdk</groupId>
     <artifactId>afip-sdk-java</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 **Gradle**
 
 ```gradle
-implementation 'com.afipsdk:afip-sdk-java:1.0.0'
+implementation 'com.afipsdk:afip-sdk-java:1.1.0'
 ```
 
 ## Uso
@@ -100,6 +100,10 @@ Map<String, Object> response = afip.electronicBilling().createVoucher(data);
 System.out.println("CAE:         " + response.get("CAE"));
 System.out.println("Vencimiento: " + response.get("CAEFchVto"));
 ```
+
+## Factura SDK
+
+La librería también incluye [Factura SDK](https://afipsdk.com/docs/facturasdk/), para emitir comprobantes de punta a punta (certificado, punto de venta, autorización en ARCA, PDF y webhooks).
 
 ## Documentación
 

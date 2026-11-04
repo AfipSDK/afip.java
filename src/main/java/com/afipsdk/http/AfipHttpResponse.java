@@ -1,21 +1,26 @@
 package com.afipsdk.http;
 
 /**
- * Respuesta HTTP interna. Solo visible dentro del paquete {@code http}.
+ * Respuesta HTTP del backend de AfipSDK: status, texto del status y cuerpo.
  */
-final class AfipHttpResponse {
+public final class AfipHttpResponse {
 
     private final int status;
     private final String statusText;
     private final String data;
 
-    AfipHttpResponse(int status, String statusText, String data) {
+    public AfipHttpResponse(int status, String statusText, String data) {
         this.status = status;
         this.statusText = statusText;
         this.data = data;
     }
 
-    int getStatus() { return status; }
-    String getStatusText() { return statusText; }
-    String getData() { return data; }
+    /** Código de status HTTP. */
+    public int getStatus() { return status; }
+
+    /** Texto del status HTTP. */
+    public String getStatusText() { return statusText; }
+
+    /** Cuerpo de la respuesta. */
+    public String getData() { return data; }
 }
