@@ -238,6 +238,56 @@ class FacturaSDKTest {
     }
 
     @Test
+    void renewCertificate_manualReturnsCertificate_andAutomationReturnsAutomationMap() {
+        stub.addResponse("{\"id\":\"cert-1\",\"status\":\"active\",\"expiration\":\"2030-10-21T00:00:00.000Z\"}");
+        stub.addResponse(202, "{\"status\":\"in_process\",\"automation_id\":\"auto-3\"}");
+        stub.addResponse("{\"id\":\"auto-3\",\"status\":\"complete\",\"data\":{\"certificate\":{\"id\":\"cert-1\"},\"renewed\":true}}");
+        stub.addResponse(202, "{\"status\":\"in_process\",\"automation_id\":\"auto-4\"}");
+        stub.addResponse(409, "{\"statusCode\":409,\"message\":\"Un certificado revocado no se puede renovar.\"}");
+
+        Map<String, Object> manual = new HashMap<String, Object>();
+        manual.put("cert", "VALID_CERT");
+        manual.put("key", "VALID_KEY");
+        Map<String, Object> renewed = facturaSDK.renewCertificate("cert-1", manual);
+        assertEquals("cert-1", renewed.get("id"));
+        assertEquals("2030-10-21T00:00:00.000Z", renewed.get("expiration"));
+        assertEquals("POST", stub.lastCall().method);
+        assertEquals("v1/certificates/cert-1/renew", stub.lastCall().path);
+        assertEquals("VALID_CERT", stub.lastCall().body.get("cert"));
+
+        Map<String, Object> automatic = new HashMap<String, Object>();
+        automatic.put("source", "automation");
+        automatic.put("password", "clave");
+        Map<String, Object> automation = facturaSDK.renewCertificate("cert-1", automatic);
+        assertEquals("complete", automation.get("status"));
+        assertEquals(true, ((Map<?, ?>) automation.get("data")).get("renewed"));
+        assertEquals("v1/automations/auto-3", stub.lastCall().path);
+
+        Map<String, Object> started = facturaSDK.renewCertificate("cert-1", automatic, false);
+        assertEquals("in_process", started.get("status"));
+        assertEquals("auto-4", started.get("automation_id"));
+
+        FacturaSDKException ex = assertThrows(FacturaSDKException.class, () -> facturaSDK.renewCertificate("cert-revoked", manual));
+        assertEquals(409, ex.getStatus());
+        assertEquals("Un certificado revocado no se puede renovar.", ex.getMessage());
+    }
+
+    @Test
+    void deleteCertificate_sendsDelete() {
+        stub.addResponse(204, "");
+        stub.addResponse(404, "{\"statusCode\":404,\"message\":\"El certificado no existe\"}");
+
+        facturaSDK.deleteCertificate("cert-1");
+
+        assertEquals("DELETE", stub.lastCall().method);
+        assertEquals("v1/certificates/cert-1", stub.lastCall().path);
+        assertNull(stub.lastCall().body);
+
+        FacturaSDKException ex = assertThrows(FacturaSDKException.class, () -> facturaSDK.getCertificate("cert-1"));
+        assertEquals(404, ex.getStatus());
+    }
+
+    @Test
     void webhookSignature_verifiesAndConstructsEvent() throws Exception {
         String secret = "whsec_test";
         String body = "{\"event_id\":\"evt_1\",\"type\":\"invoice.approved\",\"data\":{\"id\":\"inv-1\"}}";

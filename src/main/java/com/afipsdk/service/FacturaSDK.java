@@ -307,7 +307,7 @@ public final class FacturaSDK {
     /**
      * Lista los certificados, con paginación por cursor.
      *
-     * @param params filtros: tax_id, status, limit, cursor
+     * @param params filtros: tax_id, search, status, limit, cursor
      */
     public Map<String, Object> getCertificates(Map<String, Object> params) {
         return request("GET", "certificates", null, params, null);
@@ -316,6 +316,32 @@ public final class FacturaSDK {
     /** Revoca un certificado: no firma más. */
     public Map<String, Object> revokeCertificate(String id) {
         return request("POST", "certificates/" + id + "/revoke", null, null, null);
+    }
+
+    /** Renueva un certificado en el lugar y espera el resultado. Ver {@link #renewCertificate(String, Map, boolean)}. */
+    public Map<String, Object> renewCertificate(String id, Map<String, Object> data) {
+        return renewCertificate(id, data, true);
+    }
+
+    /**
+     * Renueva un certificado en el lugar: conserva su id, así los emisores que lo usan siguen
+     * facturando con el nuevo.
+     *
+     * Subido (cert y key en PEM) responde el certificado. Renovado en ARCA (source "automation", con
+     * username y password) es una automatización: con {@code wait} devuelve la automatización
+     * terminada ({@code id}, {@code status}, {@code data} con el certificado y {@code renewed} true).
+     * Un certificado revocado no se renueva.
+     */
+    public Map<String, Object> renewCertificate(String id, Map<String, Object> data, boolean wait) {
+        return automationAsMap(request("POST", "certificates/" + id + "/renew", data, null, null), wait);
+    }
+
+    /**
+     * Borra un certificado: desaparece del proyecto sin revocarse en ARCA. Los emisores que lo
+     * usaban conservan la referencia.
+     */
+    public void deleteCertificate(String id) {
+        request("DELETE", "certificates/" + id, null, null, null);
     }
 
     /** Autoriza un certificado para wsfe y espera el resultado. */
@@ -355,9 +381,9 @@ public final class FacturaSDK {
     }
 
     /**
-     * Lista los endpoints de webhook.
+     * Lista los endpoints de webhook, con paginación por cursor.
      *
-     * @param params filtros: status
+     * @param params filtros: status, limit, cursor
      */
     public Map<String, Object> getWebhookEndpoints(Map<String, Object> params) {
         return request("GET", "webhook-endpoints", null, params, null);
